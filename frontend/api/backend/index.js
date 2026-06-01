@@ -31,8 +31,15 @@ app.options("*", cors());
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+  console.log(`Backend received: ${req.method} ${req.url}`);
+  next();
+});
+
 app.use("/", ragRoutes);
 app.use("/", documentRoutes);
+app.use("/api/backend", ragRoutes);
+app.use("/api/backend", documentRoutes);
 
 app.get("/", (_req, res) => {
   res.json({
@@ -41,6 +48,20 @@ app.get("/", (_req, res) => {
       process.env.LANGSMITH_TRACING === "true" &&
       Boolean(process.env.LANGSMITH_API_KEY),
     vectorStore: getVectorStoreStatus(),
+  });
+});
+
+app.get("/api/backend", (_req, res) => {
+  res.json({
+    message: "Domain-specific RAG backend is running (prefixed).",
+    vectorStore: getVectorStoreStatus(),
+  });
+});
+
+// Catch-all for /api/backend to prevent fallthrough
+app.use("/api/backend", (req, res) => {
+  res.status(404).json({
+    message: `Backend route not found: ${req.method} ${req.url}`,
   });
 });
 

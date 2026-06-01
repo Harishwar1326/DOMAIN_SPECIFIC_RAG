@@ -22,7 +22,12 @@ for (const envPath of envCandidates) {
 const app = express();
 
 // Keep the backend easy to use from the Vite frontend and from serverless deployments.
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+app.options("*", cors());
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 
